@@ -1,7 +1,8 @@
 <?php
 	session_start();
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
 	<meta charset="UTF-8">
 	<title>Cadastro</title>
@@ -16,12 +17,12 @@
 		});
 	</script>
 </head>
-<body>
+<body style="padding: 2.5%;">
 	<header>IFRS Rio Grande - Coordenação de Assistência Estudantil</header>
 	<h1>Cadastro</h1>
 	<p>AVISO: como está em HTML5, isso só funcionará no Google Chrome. Dúvidas? Email: assistencia.estudantil@riogrande.ifrs.edu.br</p>
+	<a type="button" class="waves-effect waves-teal btn-flat" href="Sobre.php">Sobre</a>
 	<a type="button" class="waves-effect waves-teal btn-flat" href="Home.php">Home</a>
-
 	<form name="cadastro" action="Cadastro.php" method="post" class="col s12">
 		<h4>Pessoal</h4>
 		<br>
@@ -29,9 +30,15 @@
 		<br>
 		<input type="text" name="nome" id="nome" placeholder="Nome do estudante" required>
 		<br>
-		<input type="text" name="sobrenome" id="sobrenome" placeholder="Sobrenome do estudante" required>
-		<br>
 		<input type="date" name="nascimento" id="nascimento" placeholder="Data de nascimento" required>
+		<br>
+		<div class="input-field col s12">
+			<select name="sexo" id="sexo">
+				<option value="masculino">Masculino</option>
+				<option value="feminino">Feminino</option>
+			</select>
+			<label>Sexo</label>
+		</div>
 		<br>
 		<h4>Moradia</h4>
 		<br>
@@ -48,8 +55,6 @@
 		<h4>Contato</h4>
 		<br>
 		<input type="text" name="telefone" id="telefone" placeholder="Telefone (com DDD e sem parênteses)" minlength="8" maxlength="20" required>
-		<br>
-		<input type="text" name="celular" id="celular" placeholder="Celular (com DDD e sem parênteses)" minlength="9" maxlength="20">
 		<br>
 		<input type="text" name="email" id="email" placeholder="Email">
 		<br>
@@ -104,27 +109,16 @@
 		<br>
 		<input type="number" name="protocolo" id="protocolo" placeholder="Protocolo" required>
 		<br>
-		<h4>Grupo</h4>
-		<br>
-		<select name="grupo" id="grupo" required>
-			<option value="g01">1</option>
-			<option value="g02">2</option>
-			<option value="g03">3</option>
-		</select>
-		<br>
-		<input type="number" name="pontuacao" id="pontuacao" placeholder="Pontuacao" required>
-		<br>
-		<input type="number" name="valor" id="valor" placeholder="Valor" required>
+		<input type="text" name="pontuacao" id="pontuacao" placeholder="Pontuação (com ponto no lugar da vírgula)" required>
 		<br> 
 		<input type="submit" class="waves-effect waves-teal btn-flat" id="cadastrar" name="cadastrar" value="Adicionar aluno">
 	</form>
 
 	<?php
 		if (isset($_POST['cadastrar'])) {
-			$matricula = $_POST['matricula'];
 			$nome = $_POST['nome'];
-			$sobrenome = $_POST['sobrenome'];
 			$nascimento = $_POST['nascimento'];
+			$sexo = $_POST['sexo'];
 
 			$endereco = $_POST['endereco'];
 			$cidade = $_POST['cidade'];
@@ -133,9 +127,9 @@
 			$cpf = $_POST['cpf'];
 
 			$telefone = $_POST['telefone'];
-			$celular = $_POST['celular'];
 			$email = $_POST['email'];
 
+			$matricula = $_POST['matricula'];
 			$modalidade = $_POST['modalidade'];
 			$curso = $_POST['curso'];
 			$periodo = $_POST['periodo'];
@@ -144,24 +138,32 @@
 			$agencia = $_POST['agencia'];
 			$conta = $_POST['conta'];
 			$protocolo = $_POST['protocolo'];
-
-			$grupo = $_POST['grupo'];
 			$pontuacao = $_POST['pontuacao'];
-			$valor = $_POST['valor'];
+
+			function geraGrupo($pontuacao) {
+				switch ($pontuacao) {
+					case $pontuacao < 25.00: return 4;
+					case $pontuacao < 50.00: return 3;
+					case $pontuacao < 75.00: return 2;
+					case $pontuacao < 100.00: return 1;
+					default: return 0;
+				}
+			}
+			
+			$grupo = geraGrupo($pontuacao);
 
 			$connect = mysqli_connect('localhost','root', '', 'alunos') or die(mysqli_error('Não foi possível conectar ao banco de dados.'));
 
 			$create = mysqli_query($connect, "CREATE TABLE IF NOT EXISTS alunos(
 							matricula VARCHAR(8) NOT NULL PRIMARY KEY,
-							nome VARCHAR(100) NOT NULL,
-							sobrenome VARCHAR(100) NOT NULL,
+							nome VARCHAR(1000) NOT NULL,
 							nascimento DATE NOT NULL,
+							sexo VARCHAR(10) NOT NULL,
 							endereco VARCHAR(1000) NOT NULL,
 							cidade VARCHAR(100) NOT NULL,
 							rg VARCHAR(10) NOT NULL,
 							cpf VARCHAR(11) NOT NULL,
 							telefone VARCHAR(20),
-							celular VARCHAR(9),
 							email VARCHAR(100),
 							modalidade VARCHAR(20) NOT NULL,
 							curso VARCHAR(100) NOT NULL,
@@ -170,32 +172,29 @@
 							agencia VARCHAR(100) NOT NULL,
 							conta VARCHAR(10) NOT NULL,
 							protocolo VARCHAR(100) NOT NULL,
-							grupo INTEGER NOT NULL,
-							pontuacao VARCHAR(100) NOT NULL,
-							valor DOUBLE PRECISION NOT NULL);") or die($mysql_error());
+							pontuacao DECIMAL(5,2) NOT NULL,
+							grupo INTEGER NOT NULL);") or die($mysql_error());
 
 			$query_select = "SELECT matricula FROM alunos WHERE matricula = '$matricula'";
 			$select = mysqli_query($connect, $query_select) or die(mysqli_error());
 
 			$array = mysqli_fetch_array($select);
-			$logarray = $array['matriculas'];
+			$logarray = $array['matricula'];
 
 			if($logarray == $matricula){
 				echo"<script type='text/javascript'>alert('Essa matrícula já existe.');window.location.href='cadastro.php';</script>";
 				die();
 			}else{
-				$query = "INSERT INTO alunos (matricula, nome, sobrenome, nascimento, endereco, cidade, rg, cpf, telefone, celular, email, " .
-					" modalidade, curso, periodo, banco, agencia, conta, protocolo, grupo, pontuacao, valor)" .
-					" VALUES ('" . $matricula . "', '" . $nome . "', '" . $sobrenome . "', '" . $nascimento . "', '" . $endereco . "', '" . $cidade . 
-					"', '" . $rg . "', '" . $cpf . "', '" . $telefone . "', '" . $celular . "', '" . $email . "', '" . $modalidade . "', '" . $curso . 
-					"', '" . $periodo . "', '" . $banco . "', '" . $agencia . "', '" . $conta . "', '" . $protocolo . "', '" . $grupo . 
-					"', '" . $pontuacao . "', '" . $valor . "')";
+				$query = "INSERT INTO alunos (matricula, nome, nascimento, sexo, endereco, cidade, rg, cpf, telefone, email, modalidade, curso, periodo, banco, agencia, conta, protocolo, pontuacao, grupo)" .
+					" VALUES ('" . $matricula . "', '" . $nome . "', '" . $nascimento . "', '" . $sexo . "', '" . $endereco . "', '" . $cidade . 
+					"', '" . $rg . "', '" . $cpf . "', '" . $telefone . "', '" . $email . "', '" . $modalidade . "', '" . $curso . 
+					"', '" . $periodo . "', '" . $banco . "', '" . $agencia . "', '" . $conta . "', '" . $protocolo . "', '" . $pontuacao . "', '" . $grupo . "')";
 				$insert = mysqli_query($connect, $query) or die(mysqli_error());
 				
 				if($insert){
-					echo "<script type='text/javascript'>alert('Aluno cadastrado com sucesso!');window.location.href='Home.php'</script>";
+					echo "<script type='text/javascript'>alert('Aluno cadastrado com sucesso! Grupo: " . $grupo . "');window.location.href='Home.php';</script>";
 				}else{
-					echo "<script type='text/javascript'>alert('Não foi possível cadastrar esse aluno.');window.location.href='Cadastro.php'</script>";
+					echo "<script type='text/javascript'>alert('Não foi possível cadastrar esse aluno.');window.location.href='Cadastro.php';</script>";
 				}
 			}
 		}

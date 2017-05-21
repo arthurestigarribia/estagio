@@ -1,7 +1,8 @@
 <?php
 	session_start();
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
 	<meta charset="UTF-8">
 	<title> Cadastro </title>
@@ -11,20 +12,22 @@
 	<script type="text/javascript" src="js/materialize.min.js"></script>
 	<link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection"/>
 </head>
-<body>
+<body style="padding: 2.5%;">
 	<header>IFRS Rio Grande - Coordenação de Assistência Estudantil</header>
-	<h1>Cadastro</h1>
+	<h1>Informações</h1>
 	<p>AVISO: como está em HTML5, isso só funcionará no Google Chrome. Dúvidas? Email: assistencia.estudantil@riogrande.ifrs.edu.br</p>
+    <a type="button" class="waves-effect waves-teal btn-flat" href="Sobre.php">Sobre</a>
 	<a type="button" class="waves-effect waves-teal btn-flat" href="Home.php">Voltar</a>
-
 	<form action="Home.php" method="post">
 		<?php
 			$connect = mysqli_connect('localhost', 'root', '', 'alunos') or die(mysqli_error('Não foi possível conectar ao banco de dados.'));
 
-            $dados = mysqli_query($connect, 'SELECT matricula, nome, sobrenome, modalidade, curso, periodo FROM alunos WHERE matricula = ' . $_GET['matricula'] . ';') or die(mysqli_error('Erro ao conectar ao banco de dados.'));
-			$linha = mysqli_fetch_assoc($dados); //Erro: Warning: mysqli_error() expects parameter 1 to be mysqli, string given in C:\xampp\htdocs\estagio\Nome.php on line 33
+            $dados = mysqli_query($connect, 'SELECT * FROM alunos WHERE matricula = ' . $_GET['matricula'] . ';') or die(mysqli_error('Erro ao conectar ao banco de dados.'));
+			$linha = mysqli_fetch_assoc($dados);
 			
-            echo "<h4>" . $linha['matricula'] . " - " . $linha['nome'] . " " . $linha['sobrenome'] . "</h4>";
+            echo '<br><a type="button" class="waves-effect waves-teal btn-flat" href="Update.php?matricula=' . $_GET['matricula'] . '">Editar</a><a type="button" class="waves-effect waves-teal btn-flat" href="Delete.php?matricula=' . $_GET['matricula'] . '">Excluir</a><a type="button" class="waves-effect waves-teal btn-flat" href="Gera.php?matricula=' . $_GET['matricula'] . '">Gerar relatório PDF</a>';
+
+            echo "<h4>" . $linha['matricula'] . " - " . $linha['nome'] . "</h4>";
 
             $p = "";
 
@@ -83,10 +86,11 @@
                 break;
             }
 
-            echo $linha['periodo'] . "º período do Curso " . $p . " em " . $c;
-
-            echo '<br><a type="button" class="waves-effect waves-teal btn-flat" href="Update.php?matricula=' . $_GET['matricula'] . '">Editar</a><a type="button" class="waves-effect waves-teal btn-flat" href="Delete.php?matricula=' . $_GET['matricula'] . '">Excluir</a>'
-
+            echo "<div style='font-weight: bold'>Estudantil:</div>" . $linha['periodo'] . "º período do Curso " . $p . " em " . $c . "<br>";
+            echo "<div style='font-weight: bold'>Contato:</div>Telefone: " . $linha['telefone'] . " - Email: " . $linha['email'] . "<br>";
+            echo "<div style='font-weight: bold'>Registro:</div>CPF: " . $linha['cpf'] . " - RG: " . $linha['rg'] . "<br>";
+            echo "<div style='font-weight: bold'>Bancário:</div>Banco: " . $linha['banco'] . " - Agência: " . $linha['agencia'] . " - Conta: " . $linha['conta'] . " - Protocolo: " . $linha['protocolo'] . "<br>";
+            echo "<div style='font-weight: bold'>Beneficiário:</div>Pontuação: " . $linha['pontuacao'] . " - Grupo: " . $linha['grupo'];
 		?>
 	</form>
 </body>
